@@ -3,6 +3,7 @@
   "main": "client/index.js",
   "version": "1.0.0",
   "scripts": {
+    "build": "expo export --platform web",
     "expo:dev": "EXPO_PACKAGER_PROXY_URL=https://$REPLIT_DEV_DOMAIN REACT_NATIVE_PACKAGER_HOSTNAME=$REPLIT_DEV_DOMAIN EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN:5000 npx expo start --localhost",
     "expo:dev:local": "npx expo start --web --localhost --port ${PORT:-8081}",
     "expo:start:static:build": "npx expo start --no-dev --minify --localhost",
