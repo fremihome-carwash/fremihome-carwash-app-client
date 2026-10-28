@@ -1,0 +1,76 @@
+# =====================================================================
+# cw — cliente Expo (React Native + react-native-web)
+# =====================================================================
+
+# ─── Dependencies ────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ─── Build / dist ────────────────────────────────────────────────────
+dist/
+build/
+web-build/
+static-build/
+out/
+tmp/
+*.tsbuildinfo
+
+# ─── Expo / Metro ────────────────────────────────────────────────────
+.expo/
+.expo-shared/
+expo-env.d.ts
+.metro-cache/
+.metro-health-check*
+app-example/
+
+# ─── Native build outputs (prebuild, no se commitean) ────────────────
+/ios/
+/android/
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# ─── Env files (secrets) ─────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ─── Logs ────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ─── Caches ──────────────────────────────────────────────────────────
+.cache/
+.local/
+.eslintcache
+
+# ─── IDE / editor ────────────────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# ─── OS ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Replit ──────────────────────────────────────────────────────────
+.replit-artifact
+
+# ─── Claude / agents working dirs ────────────────────────────────────
+.agents/
+
+# ─── Screenshots que el agente de Replit fue adjuntando (12 MB, sin
+#     ninguna referencia desde el codigo) ────────────────────────────
+attached_assets/
