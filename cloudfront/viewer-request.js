@@ -43,9 +43,12 @@ var SITES = [
     hosts: ['app.fremihome.com'],
     canonical: 'app.fremihome.com',
 
-    // Asume bucket (u Origin path) propio para la app. Si la distribucion
-    // tiene Origin path /app.fremihome.com, poner esa misma ruta aca.
-    folder: '',
+    // La app se sirve desde app.fremihome.com/carwash/ y su contenido vive
+    // en s3://fremihome-carwash/app-client/carwash/. La distribucion tiene
+    // Origin path /app-client/carwash, asi que el /carwash de la URL publica
+    // hay que sacarlo aca o el Origin path lo duplicaria.
+    // Tiene que coincidir con EXPO_BASE_URL en .github/workflows/main.yml.
+    folder: '/carwash',
 
     // Expo con web.output = "single" exporta una sola index.html: toda ruta
     // la resuelve el router en el browser.

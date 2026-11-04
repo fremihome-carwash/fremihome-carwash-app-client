@@ -29,7 +29,12 @@ jobs:
       run: npm ci
 
     - name: Build site
-      run: npm run build   # tsc + vite build -> genera dist/
+      # EXPO_BASE_URL le dice a Expo Router desde que ruta se sirve la app.
+      # Tiene que coincidir con el folder de la entrada app.fremihome.com en
+      # cloudfront/viewer-request.js; si se desincronizan, los assets 404ean.
+      env:
+        EXPO_BASE_URL: /carwash
+      run: npm run build   # expo export --platform web -> genera dist/
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
