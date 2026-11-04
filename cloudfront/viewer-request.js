@@ -43,29 +43,67 @@ var SITES = [
     hosts: ['app.fremihome.com'],
     canonical: 'app.fremihome.com',
 
-    // La app se sirve desde app.fremihome.com/carwash/ y su contenido vive
-    // en s3://fremihome-carwash/app-client/carwash/. La distribucion tiene
-    // Origin path /app-client/carwash, asi que el /carwash de la URL publica
-    // hay que sacarlo aca o el Origin path lo duplicaria.
-    // Tiene que coincidir con EXPO_BASE_URL en .github/workflows/main.yml.
-    folder: '/carwash',
+    // La distribucion tiene Origin path /app-client y el contenido vive en
+    // s3://fremihome-carwash/app-client/carwash/. El /carwash de la URL
+    // publica NO se saca: es parte de la key, lo agrega la app de abajo.
+    folder: '',
 
     // Expo con web.output = "single" exporta una sola index.html: toda ruta
     // la resuelve el router en el browser.
     spa: true,
+
+    // Apps montadas en un subpath de este dominio, cada una con su propio
+    // index.html. Sin esto una ruta sin extension bajo /carwash caeria en
+    // /index.html, que dentro de app-client/ no existe.
+    //
+    // Cada entrada tiene que coincidir con el baseUrl con que se buildeo esa
+    // app: /carwash <-> EXPO_BASE_URL en .github/workflows/main.yml.
+    apps: ['/carwash'],
   },
 ];
 
 // Host que no figura en ninguna entrada: un dominio nuevo todavia sin dar
 // de alta, o el d*.cloudfront.net de una distribucion. NO redirige a
 // proposito: mandarlo al canonico de otro sitio lo dejaria inaccesible.
-var FALLBACK = { canonical: '', folder: '', spa: true };
+var FALLBACK = { canonical: '', folder: '', spa: true, apps: [] };
 
 function siteFor(host) {
   for (var i = 0; i < SITES.length; i++) {
     if (SITES[i].hosts.indexOf(host) !== -1) return SITES[i];
   }
   return FALLBACK;
+}
+
+// Subpath de la app que atiende esta URI, '' si el sitio vive en la raiz.
+function appRootFor(site, uri) {
+  var apps = site.apps || [];
+  for (var i = 0; i < apps.length; i++) {
+    if (uri === apps[i] || uri.indexOf(apps[i] + '/') === 0) return apps[i];
+  }
+  return '';
+}
+
+function queryString(request) {
+  var parts = [];
+  for (var k in request.querystring) {
+    var p = request.querystring[k];
+    if (p.multiValue) {
+      for (var i = 0; i < p.multiValue.length; i++) {
+        parts.push(k + '=' + p.multiValue[i].value);
+      }
+    } else {
+      parts.push(p.value ? k + '=' + p.value : k);
+    }
+  }
+  return parts.length ? '?' + parts.join('&') : '';
+}
+
+function redirect(location) {
+  return {
+    statusCode: 301,
+    statusDescription: 'Moved Permanently',
+    headers: { location: { value: location } },
+  };
 }
 
 function handler(event) {
@@ -88,37 +126,29 @@ function handler(event) {
 
   // --- 2. Dominio canonico --------------------------------------------
   if (site.canonical && host && host !== site.canonical) {
-    var parts = [];
-    for (var k in request.querystring) {
-      var p = request.querystring[k];
-      if (p.multiValue) {
-        for (var i = 0; i < p.multiValue.length; i++) {
-          parts.push(k + '=' + p.multiValue[i].value);
-        }
-      } else {
-        parts.push(p.value ? k + '=' + p.value : k);
-      }
-    }
-    var search = parts.length ? '?' + parts.join('&') : '';
-
-    return {
-      statusCode: 301,
-      statusDescription: 'Moved Permanently',
-      headers: {
-        location: { value: 'https://' + site.canonical + uri + search },
-      },
-    };
+    return redirect('https://' + site.canonical + uri + queryString(request));
   }
 
   // --- 3. Resolucion de indice ----------------------------------------
+  var apps = site.apps || [];
+  var appRoot = appRootFor(site, uri);
+
+  // Un dominio que solo hospeda apps en subpaths no tiene nada que servir en
+  // la raiz: se manda a la primera en vez de devolver un 404.
+  if ((uri === '/' || uri === '') && apps.length) {
+    var home = site.canonical || host;
+    return redirect('https://' + home + apps[0] + '/' + queryString(request));
+  }
+
   var last = uri.substring(uri.lastIndexOf('/') + 1);
   var isFile = last.indexOf('.') !== -1;
 
   if (uri === '/' || uri === '') {
     uri = '/index.html';
   } else if (!isFile) {
-    // En una SPA no existe /planes/index.html: lo resuelve el router.
-    uri = site.spa ? '/index.html' : uri.replace(/\/$/, '') + '/index.html';
+    // En una SPA no existe /planes/index.html: lo resuelve el router. Si la
+    // app vive en un subpath, su index es el de ESE subpath.
+    uri = site.spa ? appRoot + '/index.html' : uri.replace(/\/$/, '') + '/index.html';
   }
 
   request.uri = uri;
