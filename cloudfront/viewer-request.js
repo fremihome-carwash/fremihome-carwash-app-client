@@ -60,6 +60,34 @@ var SITES = [
     // app: /carwash <-> EXPO_BASE_URL en .github/workflows/main.yml.
     apps: ['/carwash'],
   },
+  {
+    // App de empresa (Vite + wouter). Repo:
+    // fremihome-carwash/fremihome-carwash-app-company
+    hosts: ['company.fremihome.com'],
+    canonical: 'company.fremihome.com',
+
+    // Origin path /app-company; el contenido vive en app-company/carwash/,
+    // asi que el /carwash de la URL publica no se saca.
+    folder: '',
+    spa: true,
+
+    // Tiene que coincidir con BASE_PATH del workflow de ese repo, que lo
+    // escribe con barra final (/carwash/) porque lo pide Vite.
+    apps: ['/carwash'],
+  },
+  {
+    // App de plataforma (Vite + wouter). Repo:
+    // fremihome-carwash/fremihome-carwash-app-platform
+    hosts: ['platform.fremihome.com'],
+    canonical: 'platform.fremihome.com',
+
+    // Origin path /app-platform; el contenido vive en app-platform/carwash/.
+    folder: '',
+    spa: true,
+
+    // Tiene que coincidir con BASE_PATH del workflow de ese repo.
+    apps: ['/carwash'],
+  },
 ];
 
 // Host que no figura en ninguna entrada: un dominio nuevo todavia sin dar
